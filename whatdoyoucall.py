@@ -12,9 +12,11 @@ def main():
 		print hlist
 		l_adjs = []
 		l_nouns = []
+		l_verbs = []
 		for word in hlist:
 			adjs = []
 			nouns = []
+			verbs = []
 			for synset in wn.synsets(word, 'a'):
 				if not adjs:
 					adjs.append(word.lower())
@@ -30,7 +32,15 @@ def main():
 				for lemma in synset.lemmas:
 					if lemma.name not in nouns and lemma.name.lower().find(nouns[0]) == -1:
 						nouns.append(lemma.name.replace('_',' '))
-							
+	
+			for synset in wn.synsets(word, 'v'):
+				if not verbs:
+					verbs.append(word.lower())
+					verbs.append(synset.name)
+				for lemma in synset.lemmas:
+					if lemma.name not in verbs and lemma.name.lower().find(verbs[0]) == -1:
+						verbs.append(lemma.name.replace('_',' '))
+				
 			if len(adjs) > 2:
 				l_adjs.append(adjs)
 			if len(nouns) > 2:
@@ -41,12 +51,22 @@ def main():
 				for nouns in l_nouns:
 					for a in range(2, len(adjs)):
 						for n in range (2, len(nouns)):
-							sim = wn.synset(nouns[1]).shortest_path_distance(wn.synset(adjs[1]),False)
-							print adjs[1],nouns[1],sim
 							prefix = "What do you call a"
 							if adjs[a][0] in ('a','e','i','o','u'):
 								prefix = prefix + "n"
 							print (prefix + " " + adjs[a] + " " + nouns[n] + "? " + adjs[0] + " " + nouns[0])
+
+		if len(l_nouns) > 1:
+			for nouns1 in l_nouns:
+				for nouns2 in l_nouns:
+					if set(nouns2) == set(nouns1):
+						break
+					for n1 in range(2, len(nouns1)):
+						for n2 in range (2, len(nouns2)):
+							prefix = "What do you call a"
+							if nouns1[n1][0] in ('a','e','i','o','u'):
+								prefix = prefix + "n"
+							print (prefix + " " + nouns1[n1] + "'s favorite " + nouns2[n2] + "? " + nouns1[0])
 
 if __name__ == "__main__":
     main()
