@@ -19,12 +19,25 @@ from nltk.corpus import wordnet as wn
 # TODO: Figure out how to represent the dictionary inputs
 # TODO: Try/Catch?
 def conceptCheck(firstWord, secondWord):
+	if (firstWord == secondWord):
+		return [firstWord, secondWord, 0]
+	elif ((firstWord == "to") or (secondWord == "to")):
+		return [firstWord, secondWord, 0]
+	elif ((firstWord == "is") or (secondWord == "is")):
+		return [firstWord, secondWord, 0]
+	elif ((firstWord == "wa") or (secondWord == "wa")):
+		return [firstWord, secondWord, 0]
+	elif ((firstWord == "was") or (secondWord == "was")):
+		return [firstWord, secondWord, 0]
 	print "Searching ConceptNet on: " + firstWord + " and " + secondWord
 	url = "http://conceptnet5.media.mit.edu/data/5.2/assoc/c/en/" + firstWord + "?filter=/c/en/" + secondWord + "&limit=1"
 	rawhtml = urllib.urlopen(url)
 	jsonWord = json.loads(rawhtml.read())
+	simScore = []
 	for score in jsonWord['similar']:
-		print(score)
+		simScore = [firstWord, secondWord, score[1]]
+	return simScore
+	# url = "http://conceptnet5.media.mit.edu/data/5.2/c/en/" + firstWord
 
 
 # Checks each word in a sentence against its expected POS vs how it appears on 
@@ -91,7 +104,6 @@ def POSextract(sentence):
 			(textTag[wordpos][1][:2] == 'JJ')):
 			posExt += word
 		wordpos += 1
-	print(posExt)
 	return posExt
 
 
@@ -105,9 +117,47 @@ def main():
 		print(posList)
 		print(hList)
 		extText = POSextract(line) # returns a list with all of the important words extracted
+		print(extText)
+		hiscore = 0
+		highSim = []
 		for word in extText:
 			for i in range(0, len(hList)):
-				conceptCheck(word, hList[i])
+				hSim = conceptCheck(word, hList[i])
+				if (hSim == []):
+					continue
+				elif (hSim[2] > hiscore):
+					highSim = hSim
+					hiscore = highSim[2]
+			for a in range(0, len(hList)):
+				mword = wn.morphy(word)
+				if mword:
+					hMorphSim = conceptCheck(mword, hList[a])
+					if (hMorphSim == []):
+						continue
+					elif (hMorphSim[2] > hiscore):
+						highSim = hMorphSim
+						hiscore = highSim[2]
+				else:
+					break
+			for j in range(0, len(posList)):
+				pSim = conceptCheck(word, posList[j])
+				if (pSim == []):
+					continue
+				elif (pSim[2] > hiscore):
+					highSim = pSim
+					hiscore = highSim[2]
+			for b in range(0, len(posList)):
+				mword = wn.morphy(word)
+				if mword:
+					pMorphSim = conceptCheck(mword, posList[b])
+					if (pMorphSim == []):
+						continue
+					elif (pMorphSim[2] > hiscore):
+						highSim = pMorphSim
+						hiscore = highSim[2]
+				else:
+					break
+			print(highSim)
 
 
 # Running the main function
